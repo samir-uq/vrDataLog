@@ -1,0 +1,15 @@
+[package]
+name = "samir/uicommision"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Fusion = "elttob/fusion@0.3.0"
+Signal = "sleitnick/signal@2.0.3"
+Janitor = "kineticwallet/janitor@1.17.0"
+Promise = "evaera/promise@4.0.0"
+UiLabs = "pepeeltoro41/ui-labs@2.3.8"
+Lyra = "paradoxum-games/lyra@0.5.0-rc.0"
+TableUtil = "sleitnick/table-util@1.2.1"
+t = "osyrisrblx/t@3.1.1"

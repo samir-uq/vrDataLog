@@ -1,0 +1,64 @@
+option ClientOutput = "../src/shared/Event/ClientEvent.luau"
+option ServerOutput = "../src/shared/Event/ServerEvent.luau"
+
+enum Items = {
+    "Wooden Rod",
+    "Plastic Rod",
+    "Fish Test One",
+    "Fish Test Two",
+}
+
+
+struct ItemData {
+    Name: Items,
+    Count: u32,
+    Data: struct {
+        UniqueId: u32,
+        Level: u16?,
+        XP: u32?
+    }
+}
+
+struct PlayerData {
+    Coins: u32?,
+        
+    Inventory: ItemData[]?,
+
+    Gamepasses: u32[]?,
+}
+
+struct EntityData {
+    
+}
+
+event PlayerDataReplication {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: PlayerData
+}
+
+function FetchPlayerData {
+    Yield: Coroutine,
+    Return: PlayerData
+}
+
+event EntityAction {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: struct {
+        Action: enum {
+            Create,
+            Destroy,
+            Update
+        },
+        EntityId: u8,
+        EntityData: EntityData?
+    }
+}
+
+function FetchEntities {
+    Yield: Coroutine,
+    Return: map {[u8]: EntityData}
+}
