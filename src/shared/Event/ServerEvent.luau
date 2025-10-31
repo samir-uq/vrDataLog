@@ -151,16 +151,127 @@ local Queue: any = {
     Unreliable = table.create(256)
 }
 
-Queue.Reliable[1] = table.create(256)
-Queue.Reliable[3] = table.create(256)
+Queue.Reliable[0] = table.create(256)
+Queue.Reliable[2] = table.create(256)
+Queue.Reliable[4] = table.create(256)
 export type Items = ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two")
 export type ItemData = { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } }
 export type PlayerData = { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }
 export type EntityData = {  }
+local function ReadEVENT_LogData(): ({ { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } })
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
+	-- START ARRAY
+	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+	if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+	local Value = table.create(Length)
+		-- Read BLOCK: 12 bytes
+	local ARRAY_START_1 = Read(12 * Length)
+	for Index = 1, Length do
+		local Item_1 = {} :: any
+		-- Read 8
+		local OPERATION_OFFSET_0 = ARRAY_START_1
+		ARRAY_START_1 += 8
+		Item_1.t = buffer.readf64(RecieveBuffer, OPERATION_OFFSET_0)
+		-- Read 1
+		local OPERATION_OFFSET_1 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		if buffer.readu8(RecieveBuffer, OPERATION_OFFSET_1) == 1 then
+			-- Read BLOCK: 2 bytes
+			local BLOCK_START = Read(2)
+			-- START ARRAY
+			Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+			if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+			if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+			Item_1.Head = table.create(Length)
+				-- Read BLOCK: 8 bytes
+			local ARRAY_START_3 = Read(8 * Length)
+			for Index = 1, Length do
+				-- Read 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				local Item_3 = buffer.readf64(RecieveBuffer, OPERATION_OFFSET_0)
+				table.insert(Item_1.Head, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Read 1
+		local OPERATION_OFFSET_2 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		if buffer.readu8(RecieveBuffer, OPERATION_OFFSET_2) == 1 then
+			-- Read BLOCK: 2 bytes
+			local BLOCK_START = Read(2)
+			-- START ARRAY
+			Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+			if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+			if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+			Item_1.LeftHand = table.create(Length)
+				-- Read BLOCK: 8 bytes
+			local ARRAY_START_3 = Read(8 * Length)
+			for Index = 1, Length do
+				-- Read 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				local Item_3 = buffer.readf64(RecieveBuffer, OPERATION_OFFSET_0)
+				table.insert(Item_1.LeftHand, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Read 1
+		local OPERATION_OFFSET_3 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		if buffer.readu8(RecieveBuffer, OPERATION_OFFSET_3) == 1 then
+			-- Read BLOCK: 2 bytes
+			local BLOCK_START = Read(2)
+			-- START ARRAY
+			Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+			if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+			if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+			Item_1.RightHand = table.create(Length)
+				-- Read BLOCK: 8 bytes
+			local ARRAY_START_3 = Read(8 * Length)
+			for Index = 1, Length do
+				-- Read 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				local Item_3 = buffer.readf64(RecieveBuffer, OPERATION_OFFSET_0)
+				table.insert(Item_1.RightHand, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Read 1
+		local OPERATION_OFFSET_4 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		if buffer.readu8(RecieveBuffer, OPERATION_OFFSET_4) == 1 then
+			-- Read BLOCK: 2 bytes
+			local BLOCK_START = Read(2)
+			-- START ARRAY
+			Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+			if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+			if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+			Item_1.Floor = table.create(Length)
+				-- Read BLOCK: 8 bytes
+			local ARRAY_START_3 = Read(8 * Length)
+			for Index = 1, Length do
+				-- Read 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				local Item_3 = buffer.readf64(RecieveBuffer, OPERATION_OFFSET_0)
+				table.insert(Item_1.Floor, Item_3)
+			end
+			-- END ARRAY
+		end
+		table.insert(Value, Item_1)
+	end
+	-- END ARRAY
+	return Value
+end
+
 local function WriteEVENT_PlayerDataReplication(Value: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }): ()
 	-- Allocate BLOCK: 4 bytes
 	local BLOCK_START = Allocate(4)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
 	buffer.writeu8(SendBuffer, BLOCK_START + 1, Value.Coins ~= nil and 1 or 0)
 	if Value.Coins ~= nil then
 		-- Allocate BLOCK: 4 bytes
@@ -246,7 +357,7 @@ end
 local function WriteFUNCTION_RETURN_FetchPlayerData(Value: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }, InvocationIdentifier: number): ()
 	-- Allocate BLOCK: 6 bytes
 	local BLOCK_START = Allocate(6)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
 	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
 	buffer.writeu8(SendBuffer, BLOCK_START + 2, 1)
 	buffer.writeu8(SendBuffer, BLOCK_START + 3, Value.Coins ~= nil and 1 or 0)
@@ -330,7 +441,7 @@ end
 local function WriteEVENT_EntityAction(Value: { Action: ("Create" | "Destroy" | "Update"), EntityId: number, EntityData: {  }? }): ()
 	-- Allocate BLOCK: 4 bytes
 	local BLOCK_START = Allocate(4)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 3)
 	if Value.Action == "Create" then
 		buffer.writeu8(SendBuffer, BLOCK_START + 1, 0)
 	elseif Value.Action == "Destroy" then
@@ -353,7 +464,7 @@ end
 local function WriteFUNCTION_RETURN_FetchEntities(Value: {[number]: {  }}, InvocationIdentifier: number): ()
 	-- Allocate BLOCK: 5 bytes
 	local BLOCK_START = Allocate(5)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 4)
 	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
 	buffer.writeu8(SendBuffer, BLOCK_START + 2, 1)
 	local Elements_1 = 0
@@ -368,6 +479,9 @@ end
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
+	LogData = {
+		On = NOOP
+	},
 	PlayerDataReplication = {
 		Fire = NOOP,
 		FireAll = NOOP,
@@ -443,31 +557,41 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-		if Index == 1 then
+		if Index == 0 then
+			local Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } = ReadEVENT_LogData()
+			if Events.Reliable[0] ~= nil then
+				Events.Reliable[0](Player, Value)
+			else
+				if #Queue.Reliable[0] > 256 then
+					warn("[Blink]: Event queue of \"LogData\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[0], {Player, Value} :: {any})
+			end
+		elseif Index == 2 then
 			-- Read BLOCK: 1 bytes
 			local BLOCK_START = Read(1)
 			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 			local Value: nil = ReadFUNCTION_DATA_FetchPlayerData()
-			if Events.Reliable[1] ~= nil then
-				task.spawn(Events.Reliable[1], Player, Value, InvocationIdentifier)
+			if Events.Reliable[2] ~= nil then
+				task.spawn(Events.Reliable[2], Player, Value, InvocationIdentifier)
 			else
-				if #Queue.Reliable[1] > 256 then
+				if #Queue.Reliable[2] > 256 then
 					warn("[Blink]: Event queue of \"FetchPlayerData\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[1], {Player, Value, InvocationIdentifier} :: {any})
+				table.insert(Queue.Reliable[2], {Player, Value, InvocationIdentifier} :: {any})
 			end
-		elseif Index == 3 then
+		elseif Index == 4 then
 			-- Read BLOCK: 1 bytes
 			local BLOCK_START = Read(1)
 			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 			local Value: nil = ReadFUNCTION_DATA_FetchEntities()
-			if Events.Reliable[3] ~= nil then
-				task.spawn(Events.Reliable[3], Player, Value, InvocationIdentifier)
+			if Events.Reliable[4] ~= nil then
+				task.spawn(Events.Reliable[4], Player, Value, InvocationIdentifier)
 			else
-				if #Queue.Reliable[3] > 256 then
+				if #Queue.Reliable[4] > 256 then
 					warn("[Blink]: Event queue of \"FetchEntities\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[3], {Player, Value, InvocationIdentifier} :: {any})
+				table.insert(Queue.Reliable[4], {Player, Value, InvocationIdentifier} :: {any})
 			end
 		end
 	end
@@ -489,6 +613,20 @@ end)
 local Returns = table.freeze({
 	StepReplication = StepReplication,
 
+	LogData = {
+		On = function(Listener: (Player: Player, Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }) -> ()): () -> ()
+			Events.Reliable[0] = Listener
+			for Index, Arguments in Queue.Reliable[0] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[0] = {}
+			return function (): ()
+				if Events.Reliable[0] == Listener then
+					Events.Reliable[0] = nil
+				end
+			end
+		end
+	},
 	PlayerDataReplication = {
 		Fire = function(Player: Player, Value: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }): ()
 			Load(PlayersMap[Player])
@@ -537,7 +675,7 @@ local Returns = table.freeze({
 	},
 	FetchPlayerData = {
 		On = function(Listener: (Player, nil) -> ({ Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? })): ()
-			Events.Reliable[1] = function(Player: Player, Value: nil, InvocationIdentifier: number): ()
+			Events.Reliable[2] = function(Player: Player, Value: nil, InvocationIdentifier: number): ()
 				local ReturnValue: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? };
 				local Success, Error = pcall(function ()
 					ReturnValue = Listener(Player, Value)
@@ -545,7 +683,7 @@ local Returns = table.freeze({
 				Load(PlayersMap[Player])
 				if Success ~= true then
 					local Position = Allocate(3)
-					buffer.writeu8(SendBuffer, Position, 1)
+					buffer.writeu8(SendBuffer, Position, 2)
 					buffer.writeu8(SendBuffer, Position + 1, InvocationIdentifier)
 					buffer.writeu8(SendBuffer, Position + 2, 0)
 					warn(`"FetchPlayerData" encountered an error, {Error}`)
@@ -555,10 +693,10 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 			task.spawn(function (): ()
-				local EventQueue = Queue.Reliable[1] or {}
-				Queue.Reliable[1] = nil
+				local EventQueue = Queue.Reliable[2] or {}
+				Queue.Reliable[2] = nil
 				for Index, Arguments in EventQueue do
-					Events.Reliable[1](table.unpack(Arguments))
+					Events.Reliable[2](table.unpack(Arguments))
 				end
 			end)
 		end
@@ -611,7 +749,7 @@ local Returns = table.freeze({
 	},
 	FetchEntities = {
 		On = function(Listener: (Player, nil) -> ({[number]: {  }})): ()
-			Events.Reliable[3] = function(Player: Player, Value: nil, InvocationIdentifier: number): ()
+			Events.Reliable[4] = function(Player: Player, Value: nil, InvocationIdentifier: number): ()
 				local ReturnValue: {[number]: {  }};
 				local Success, Error = pcall(function ()
 					ReturnValue = Listener(Player, Value)
@@ -619,7 +757,7 @@ local Returns = table.freeze({
 				Load(PlayersMap[Player])
 				if Success ~= true then
 					local Position = Allocate(3)
-					buffer.writeu8(SendBuffer, Position, 3)
+					buffer.writeu8(SendBuffer, Position, 4)
 					buffer.writeu8(SendBuffer, Position + 1, InvocationIdentifier)
 					buffer.writeu8(SendBuffer, Position + 2, 0)
 					warn(`"FetchEntities" encountered an error, {Error}`)
@@ -629,10 +767,10 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 			task.spawn(function (): ()
-				local EventQueue = Queue.Reliable[3] or {}
-				Queue.Reliable[3] = nil
+				local EventQueue = Queue.Reliable[4] or {}
+				Queue.Reliable[4] = nil
 				for Index, Arguments in EventQueue do
-					Events.Reliable[3](table.unpack(Arguments))
+					Events.Reliable[4](table.unpack(Arguments))
 				end
 			end)
 		end

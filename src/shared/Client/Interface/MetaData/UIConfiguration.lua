@@ -1,7 +1,7 @@
 return {
     
     default = {
-        primaryFont = Font.fromName("Montserrat", Enum.FontWeight.SemiBold),
+        primaryFont = Font.fromName("Rye", Enum.FontWeight.SemiBold),
 
         anchorPoint = Vector2.new(0.5, 0.5),
         size = UDim2.fromScale(0.5, 0.5),

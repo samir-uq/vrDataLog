@@ -150,14 +150,112 @@ local Queue: any = {
     Unreliable = table.create(256)
 }
 
-Queue.Reliable[0] = table.create(256)
 Queue.Reliable[1] = table.create(256)
 Queue.Reliable[2] = table.create(256)
 Queue.Reliable[3] = table.create(256)
+Queue.Reliable[4] = table.create(256)
 export type Items = ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two")
 export type ItemData = { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } }
 export type PlayerData = { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }
 export type EntityData = {  }
+local function WriteEVENT_LogData(Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	-- START ARRAY
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, #Value)
+		-- Allocate BLOCK: 12 bytes
+	local ARRAY_START_1 = Allocate(12 * #Value)
+	for Index = 1, #Value do
+		local Item_1 = Value[Index]
+		-- Allocate 8
+		local OPERATION_OFFSET_0 = ARRAY_START_1
+		ARRAY_START_1 += 8
+		buffer.writef64(SendBuffer, OPERATION_OFFSET_0, Item_1.t)
+		-- Allocate 1
+		local OPERATION_OFFSET_1 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		buffer.writeu8(SendBuffer, OPERATION_OFFSET_1, Item_1.Head ~= nil and 1 or 0)
+		if Item_1.Head ~= nil then
+			-- Allocate BLOCK: 2 bytes
+			local BLOCK_START = Allocate(2)
+			-- START ARRAY
+			buffer.writeu16(SendBuffer, BLOCK_START + 0, #Item_1.Head)
+				-- Allocate BLOCK: 8 bytes
+			local ARRAY_START_3 = Allocate(8 * #Item_1.Head)
+			for Index = 1, #Item_1.Head do
+				local Item_3 = Item_1.Head[Index]
+				-- Allocate 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				buffer.writef64(SendBuffer, OPERATION_OFFSET_0, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Allocate 1
+		local OPERATION_OFFSET_2 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		buffer.writeu8(SendBuffer, OPERATION_OFFSET_2, Item_1.LeftHand ~= nil and 1 or 0)
+		if Item_1.LeftHand ~= nil then
+			-- Allocate BLOCK: 2 bytes
+			local BLOCK_START = Allocate(2)
+			-- START ARRAY
+			buffer.writeu16(SendBuffer, BLOCK_START + 0, #Item_1.LeftHand)
+				-- Allocate BLOCK: 8 bytes
+			local ARRAY_START_3 = Allocate(8 * #Item_1.LeftHand)
+			for Index = 1, #Item_1.LeftHand do
+				local Item_3 = Item_1.LeftHand[Index]
+				-- Allocate 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				buffer.writef64(SendBuffer, OPERATION_OFFSET_0, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Allocate 1
+		local OPERATION_OFFSET_3 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		buffer.writeu8(SendBuffer, OPERATION_OFFSET_3, Item_1.RightHand ~= nil and 1 or 0)
+		if Item_1.RightHand ~= nil then
+			-- Allocate BLOCK: 2 bytes
+			local BLOCK_START = Allocate(2)
+			-- START ARRAY
+			buffer.writeu16(SendBuffer, BLOCK_START + 0, #Item_1.RightHand)
+				-- Allocate BLOCK: 8 bytes
+			local ARRAY_START_3 = Allocate(8 * #Item_1.RightHand)
+			for Index = 1, #Item_1.RightHand do
+				local Item_3 = Item_1.RightHand[Index]
+				-- Allocate 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				buffer.writef64(SendBuffer, OPERATION_OFFSET_0, Item_3)
+			end
+			-- END ARRAY
+		end
+		-- Allocate 1
+		local OPERATION_OFFSET_4 = ARRAY_START_1
+		ARRAY_START_1 += 1
+		buffer.writeu8(SendBuffer, OPERATION_OFFSET_4, Item_1.Floor ~= nil and 1 or 0)
+		if Item_1.Floor ~= nil then
+			-- Allocate BLOCK: 2 bytes
+			local BLOCK_START = Allocate(2)
+			-- START ARRAY
+			buffer.writeu16(SendBuffer, BLOCK_START + 0, #Item_1.Floor)
+				-- Allocate BLOCK: 8 bytes
+			local ARRAY_START_3 = Allocate(8 * #Item_1.Floor)
+			for Index = 1, #Item_1.Floor do
+				local Item_3 = Item_1.Floor[Index]
+				-- Allocate 8
+				local OPERATION_OFFSET_0 = ARRAY_START_3
+				ARRAY_START_3 += 8
+				buffer.writef64(SendBuffer, OPERATION_OFFSET_0, Item_3)
+			end
+			-- END ARRAY
+		end
+	end
+	-- END ARRAY
+end
+
 local function ReadEVENT_PlayerDataReplication(): ({ Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? })
 	-- Read BLOCK: 3 bytes
 	local BLOCK_START = Read(3)
@@ -249,7 +347,7 @@ end
 local function WriteFUNCTION_DATA_FetchPlayerData(Value: nil, InvocationIdentifier: number): ()
 	-- Allocate BLOCK: 2 bytes
 	local BLOCK_START = Allocate(2)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
 	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
 end
 
@@ -370,7 +468,7 @@ end
 local function WriteFUNCTION_DATA_FetchEntities(Value: nil, InvocationIdentifier: number): ()
 	-- Allocate BLOCK: 2 bytes
 	local BLOCK_START = Allocate(2)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 4)
 	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
 end
 
@@ -395,6 +493,9 @@ end
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
+	LogData = {
+		Fire = NOOP
+	},
 	PlayerDataReplication = {
 		On = NOOP
 	},
@@ -444,17 +545,17 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-		if Index == 0 then
+		if Index == 1 then
 			local Value: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? } = ReadEVENT_PlayerDataReplication()
-			if Events.Reliable[0] ~= nil then
-				Events.Reliable[0](Value)
+			if Events.Reliable[1] ~= nil then
+				Events.Reliable[1](Value)
 			else
-				if #Queue.Reliable[0] > 256 then
+				if #Queue.Reliable[1] > 256 then
 					warn("[Blink]: Event queue of \"PlayerDataReplication\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[0], {Value} :: {any})
+				table.insert(Queue.Reliable[1], {Value} :: {any})
 			end
-		elseif Index == 1 then
+		elseif Index == 2 then
 			-- Read BLOCK: 1 bytes
 			local BLOCK_START = Read(1)
 			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
@@ -465,17 +566,17 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				task.spawn(Calls[InvocationIdentifier], Success, ReturnValue)
 				Calls[InvocationIdentifier] = nil
 			end
-		elseif Index == 2 then
+		elseif Index == 3 then
 			local Value: { Action: ("Create" | "Destroy" | "Update"), EntityId: number, EntityData: {  }? } = ReadEVENT_EntityAction()
-			if Events.Reliable[2] ~= nil then
-				Events.Reliable[2](Value)
+			if Events.Reliable[3] ~= nil then
+				Events.Reliable[3](Value)
 			else
-				if #Queue.Reliable[2] > 256 then
+				if #Queue.Reliable[3] > 256 then
 					warn("[Blink]: Event queue of \"EntityAction\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[2], {Value} :: {any})
+				table.insert(Queue.Reliable[3], {Value} :: {any})
 			end
-		elseif Index == 3 then
+		elseif Index == 4 then
 			-- Read BLOCK: 1 bytes
 			local BLOCK_START = Read(1)
 			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
@@ -506,16 +607,21 @@ end)
 local Returns = table.freeze({
 	StepReplication = StepReplication,
 
+	LogData = {
+		Fire = function(Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }): ()
+			WriteEVENT_LogData(Value)
+		end
+	},
 	PlayerDataReplication = {
 		On = function(Listener: (Value: { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }) -> ()): () -> ()
-			Events.Reliable[0] = Listener
-			for Index, Arguments in Queue.Reliable[0] do
+			Events.Reliable[1] = Listener
+			for Index, Arguments in Queue.Reliable[1] do
 				Listener(table.unpack(Arguments))
 			end
-			Queue.Reliable[0] = {}
+			Queue.Reliable[1] = {}
 			return function (): ()
-				if Events.Reliable[0] == Listener then
-					Events.Reliable[0] = nil
+				if Events.Reliable[1] == Listener then
+					Events.Reliable[1] = nil
 				end
 			end
 		end
@@ -538,14 +644,14 @@ local Returns = table.freeze({
 	},
 	EntityAction = {
 		On = function(Listener: (Value: { Action: ("Create" | "Destroy" | "Update"), EntityId: number, EntityData: {  }? }) -> ()): () -> ()
-			Events.Reliable[2] = Listener
-			for Index, Arguments in Queue.Reliable[2] do
+			Events.Reliable[3] = Listener
+			for Index, Arguments in Queue.Reliable[3] do
 				Listener(table.unpack(Arguments))
 			end
-			Queue.Reliable[2] = {}
+			Queue.Reliable[3] = {}
 			return function (): ()
-				if Events.Reliable[2] == Listener then
-					Events.Reliable[2] = nil
+				if Events.Reliable[3] == Listener then
+					Events.Reliable[3] = nil
 				end
 			end
 		end

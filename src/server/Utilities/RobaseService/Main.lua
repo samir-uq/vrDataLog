@@ -152,7 +152,6 @@ function Robase:GetAsync(key)
             ):format(err[1], err[2], err[3])
         )
     end):await()
-
     value = value and HttpService:JSONDecode(value) or nil
     return success, value
 end
@@ -169,7 +168,6 @@ function Robase:SetAsync(key, data, method)
         )
     end)
     local success, value = set:await()
-
     value = value and HttpService:JSONDecode(value) or nil
     return success,value
 end
