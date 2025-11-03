@@ -11,9 +11,9 @@ function LogVRData.Start()
     ServerEvent.LogData.On(function(Player, Value)
         LogBase:UpdateAsync("Content", function(Current: any)
             if not Current then Current = {} end
-            if not Current.data then Current.data = {} end
+            if not Current[Value.id] then Current[Value.id] = {} end
             
-            table.insert(Current.data, Value)
+            table.insert(Current[Value.id], Value.data)
             return Current
         end)
     end)

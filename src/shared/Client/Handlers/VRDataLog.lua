@@ -64,8 +64,11 @@ function DataLogger:getLog(): {log}
     return self.logs
 end
 
-function DataLogger:sendLog()
-    ClientEvent.LogData.Fire(self:getLog())
+function DataLogger:sendLog(id: string)
+    ClientEvent.LogData.Fire({
+        id = id,
+        data = self:getLog()
+    })
 end
 
 return DataLogger

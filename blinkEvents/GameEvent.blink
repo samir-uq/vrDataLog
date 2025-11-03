@@ -31,17 +31,22 @@ struct EntityData {
     
 }
 
+struct dataPack {
+    t: f64,
+    Head: f64[]?,
+    LeftHand: f64[]?,
+    RightHand: f64[]?,
+    Floor: f64[]?,
+}
+
 event LogData {
     from: Client,
     type: Reliable,
     call: SingleSync,
     data: struct {
-        t: f64,
-        Head: f64[]?,
-        LeftHand: f64[]?,
-        RightHand: f64[]?,
-        Floor: f64[]?,
-    }[]
+        id: string,
+        data: dataPack[]
+    }
 }
 
 event PlayerDataReplication {

@@ -7,6 +7,7 @@ local VRDataLog = require(ReplicatedStorage.Shared.Client.Handlers.VRDataLog)
 local Background = require(ReplicatedStorage.Shared.Client.Interface.Components.Background)
 local Button = require(ReplicatedStorage.Shared.Client.Interface.Components.Default.Button)
 local Container = require(ReplicatedStorage.Shared.Client.Interface.Components.Default.Container)
+local Searchbar = require(ReplicatedStorage.Shared.Client.Interface.Components.Default.Searchbar)
 local Text = require(ReplicatedStorage.Shared.Client.Interface.Components.Default.Text)
 local Interface = {}
 
@@ -22,6 +23,7 @@ local Dependency = {
     BackgroundComponent = Background,
     Container = Container,
     Text = Text,
+    SearchBar = Searchbar
 }
 
 type scope = Fusion.Scope<typeof(Fusion) & typeof(Dependency)>
@@ -34,6 +36,8 @@ function Interface.Create(scope: scope, props: {
 
     local status = scope:Value(0)
     local textSizeScale = scope:Spring(scope:Value(1), 12, 1)
+
+    local id = scope:Value("unidentified action")
 
     local textSize = scope:Computed(function(use)
         local size = use(textSizeScale)
@@ -56,7 +60,7 @@ function Interface.Create(scope: scope, props: {
             else
                 if not current then return end
                 current:stop()
-                current:sendLog()
+                current:sendLog(peek(id))
                 status:set(0)
 
                 StarterGui:SetCore("SendNotification", {
@@ -92,6 +96,12 @@ function Interface.Create(scope: scope, props: {
 
                     return "Recording..."
                 end)
+            },
+
+            scope:SearchBar {
+                text = id,
+                size = UDim2.fromScale(0.5, 0.1),
+                placeholderText = "add id",
             }
         }
     }

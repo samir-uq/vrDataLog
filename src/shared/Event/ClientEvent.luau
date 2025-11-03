@@ -158,16 +158,21 @@ export type Items = ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test
 export type ItemData = { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } }
 export type PlayerData = { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }
 export type EntityData = {  }
-local function WriteEVENT_LogData(Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }): ()
-	-- Allocate BLOCK: 3 bytes
-	local BLOCK_START = Allocate(3)
+export type dataPack = { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? }
+local function WriteEVENT_LogData(Value: { id: string, data: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } }): ()
+	-- Allocate BLOCK: 5 bytes
+	local BLOCK_START = Allocate(5)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	local Length = #Value.id
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
+	Allocate(Length)
+	buffer.writestring(SendBuffer, SendOffset, Value.id, Length)
 	-- START ARRAY
-	buffer.writeu16(SendBuffer, BLOCK_START + 1, #Value)
+	buffer.writeu16(SendBuffer, BLOCK_START + 3, #Value.data)
 		-- Allocate BLOCK: 12 bytes
-	local ARRAY_START_1 = Allocate(12 * #Value)
-	for Index = 1, #Value do
-		local Item_1 = Value[Index]
+	local ARRAY_START_1 = Allocate(12 * #Value.data)
+	for Index = 1, #Value.data do
+		local Item_1 = Value.data[Index]
 		-- Allocate 8
 		local OPERATION_OFFSET_0 = ARRAY_START_1
 		ARRAY_START_1 += 8
@@ -608,7 +613,7 @@ local Returns = table.freeze({
 	StepReplication = StepReplication,
 
 	LogData = {
-		Fire = function(Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }): ()
+		Fire = function(Value: { id: string, data: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } }): ()
 			WriteEVENT_LogData(Value)
 		end
 	},

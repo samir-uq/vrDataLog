@@ -26,9 +26,10 @@ local function arrayToCFrame(arr: any)
 	return CFrame.new(table.unpack(arr)) * CFrame.new(0, 10, 0)
 end
 
-function randomModulescript.showSimulation(simIndex)
+function randomModulescript.showSimulation(id: string, simIndex: number?)
     local _,data = LogBase:GetAsync("Content")
-    local frames = data.data[simIndex or 1]
+	warn(data)
+    local frames = data[id][(simIndex or 0)+1]
 
 	task.spawn(function()
 		while true do
@@ -48,7 +49,7 @@ end
 
 function randomModulescript.Start()
     task.wait(3)
-    randomModulescript.showSimulation(2)
+    randomModulescript.showSimulation(" punch test 11 1 12pm",3)
 end
 
 return randomModulescript

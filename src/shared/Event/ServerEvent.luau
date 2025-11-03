@@ -158,14 +158,18 @@ export type Items = ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test
 export type ItemData = { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } }
 export type PlayerData = { Coins: number?, Inventory: { { Name: ("Wooden Rod" | "Plastic Rod" | "Fish Test One" | "Fish Test Two"), Count: number, Data: { UniqueId: number, Level: number?, XP: number? } } }?, Gamepasses: { number }? }
 export type EntityData = {  }
-local function ReadEVENT_LogData(): ({ { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } })
-	-- Read BLOCK: 2 bytes
-	local BLOCK_START = Read(2)
-	-- START ARRAY
+export type dataPack = { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? }
+local function ReadEVENT_LogData(): ({ id: string, data: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } })
+	-- Read BLOCK: 4 bytes
+	local BLOCK_START = Read(4)
+	local Value = {} :: any
 	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	Value.id = buffer.readstring(RecieveBuffer, Read(Length), Length)
+	-- START ARRAY
+	Length = buffer.readu16(RecieveBuffer, BLOCK_START + 2)
 	if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
 	if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
-	local Value = table.create(Length)
+	Value.data = table.create(Length)
 		-- Read BLOCK: 12 bytes
 	local ARRAY_START_1 = Read(12 * Length)
 	for Index = 1, Length do
@@ -262,7 +266,7 @@ local function ReadEVENT_LogData(): ({ { t: number, Head: { number }?, LeftHand:
 			end
 			-- END ARRAY
 		end
-		table.insert(Value, Item_1)
+		table.insert(Value.data, Item_1)
 	end
 	-- END ARRAY
 	return Value
@@ -558,7 +562,7 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
-			local Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } = ReadEVENT_LogData()
+			local Value: { id: string, data: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } } = ReadEVENT_LogData()
 			if Events.Reliable[0] ~= nil then
 				Events.Reliable[0](Player, Value)
 			else
@@ -614,7 +618,7 @@ local Returns = table.freeze({
 	StepReplication = StepReplication,
 
 	LogData = {
-		On = function(Listener: (Player: Player, Value: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } }) -> ()): () -> ()
+		On = function(Listener: (Player: Player, Value: { id: string, data: { { t: number, Head: { number }?, LeftHand: { number }?, RightHand: { number }?, Floor: { number }? } } }) -> ()): () -> ()
 			Events.Reliable[0] = Listener
 			for Index, Arguments in Queue.Reliable[0] do
 				Listener(table.unpack(Arguments))
